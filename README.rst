@@ -19,9 +19,34 @@ including:
 **Note**: The view plugins for rendering spatial formats like GeoJSON_ have
 been moved to ckanext-geoview_.
 
-Full documentation, including installation instructions, can be found at:
+Old documentation, including installation instructions, can be found at:
 
 https://docs.ckan.org/projects/ckanext-spatial/en/latest/
+
+For TWDH installation (CKAN 2.9.5 on Ubuntu 20.04 LTS), first ensure you have ckanext-harvest_ installed using a Redis backend.
+
+Afterwards, do the following::
+
+  . /usr/lib/ckan/default/bin/activate
+  sudo apt-get install postgis
+  sudo -u postgres psql -d ckan_default -f /usr/share/postgresql/12/contrib/postgis-3.0/postgis.sql
+  sudo -u postgres psql -d ckan_default -f /usr/share/postgresql/12/contrib/postgis-3.0/spatial_ref_sys.sql 
+  sudo -u postgres psql -d ckan_default -c 'ALTER VIEW geometry_columns OWNER TO ckan_default;'
+  sudo -u postgres psql -d ckan_default -c 'ALTER TABLE spatial_ref_sys OWNER TO ckan_default;'
+  cd /usr/lib/ckan/default/src
+  git clone https://github.com/dathere/ckanext-spatial
+  cd ckanext-spatial
+  pip install -r requirements.txt
+  sudo apt-get install python3-dev libxml2-dev libxslt1-dev libgeos-c1v5
+  python setup.py develop
+
+then add ckanext-spatial to your ckan.ini plugins::
+
+  ckan.plugins = ... twdh_theme harvest ckan_harvester spatial_metadata spatial_query twdh_schema ...
+
+and restart CKAN::
+
+  sudo service supervisor reload
 
 
 Community
@@ -55,3 +80,4 @@ http://www.fsf.org/licensing/licenses/agpl-3.0.html
 .. _pycsw: http://pycsw.org
 .. _GeoJSON: http://geojson.org
 .. _ckanext-geoview: https://github.com/ckan/ckanext-geoview
+.. _ckanext-harvest: https://github.com/ckan/ckanext-harvest

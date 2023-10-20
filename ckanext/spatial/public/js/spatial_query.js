@@ -89,7 +89,8 @@ this.ckan.module('spatial-query', function ($, _) {
         element.on('click', '.btn-cancel', this._onCancel);
         element.modal({show: false});
 
-        element.find('.modal-title').text(this._('Please draw query extent in the map:'));
+        element.find('.modal-title').text(this._('Filter by Location'));
+        element.find('.modal-body').prepend(this._('Please draw the query extent on the map'));
         element.find('.btn-primary').text(this._('Apply'));
         element.find('.btn-cancel').text(this._('Cancel'));
 
@@ -205,6 +206,7 @@ this.ckan.module('spatial-query', function ($, _) {
         if (zoom) {
           map.fitBounds(this.extentLayer.getBounds(), {"animate": false, "padding": [20, 20]});
         }
+        $('#dataset-map-clear').removeClass( 'hidden' );
       } else {
         map.fitBounds(this.options.default_extent, {"animate": false});
       }

@@ -101,7 +101,7 @@ this.ckan.module('spatial-query', function ($, _) {
             module._setPreviousBBBox(map, zoom=false);
             map.fitBounds(module.mainMap.getBounds());
 
-            $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
+            // $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
             return
           }
           var container = element.find('#draw-map-container')[0];
@@ -121,6 +121,28 @@ this.ckan.module('spatial-query', function ($, _) {
           });
 
           map.addControl(draw);
+
+          L.Control.Drag = L.Control.Draw.extend({
+            options: {
+              position: 'topright'
+            },
+            onAdd: function (map) {
+              var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+              var button = L.DomUtil.create('a', 'leaflet-button', container);
+              button.innerHTML = '<i class="fa fa-pencil"></i>';
+              L.DomEvent.disableClickPropagation(button);
+              L.DomEvent.on(button, 'click', function(){
+                // add onClick code here
+              });
+
+              container.title = "Grab and Pan map";
+
+              return container;
+            },
+            onRemove: function(map) {},
+          });
+          var drag = new L.Control.Drag()
+          map.addControl( drag );
 
           module._setPreviousBBBox(map, zoom=false);
           map.fitBounds(module.mainMap.getBounds());

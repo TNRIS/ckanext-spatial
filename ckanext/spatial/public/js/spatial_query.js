@@ -122,6 +122,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
           map.addControl(draw);
 
+          /*
           L.Control.Drag = L.Control.Draw.extend({
             options: {
               position: 'topright'
@@ -143,6 +144,7 @@ this.ckan.module('spatial-query', function ($, _) {
           });
           var drag = new L.Control.Drag()
           map.addControl( drag );
+          */
 
           module._setPreviousBBBox(map, zoom=false);
           map.fitBounds(module.mainMap.getBounds());

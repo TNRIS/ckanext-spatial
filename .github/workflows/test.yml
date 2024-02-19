@@ -2,33 +2,41 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
+
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.6'
+          python-version: '3.8'
       - name: Install requirements
         run: pip install flake8 pycodestyle
       - name: Check syntax
         run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics --exclude ckan
+
   test:
     needs: lint
     strategy:
       matrix:
-        ckan-version: [2.9, 2.9-py2, 2.8, 2.7]
+        include:
+          - ckan-version: "2.10"
+            solr-image: "2.10-solr9-spatial"
+            harvester-version: 'master'
+          - ckan-version: 2.9
+            solr-image: 2.9-solr9-spatial
+            harvester-version: 'master'
       fail-fast: false
     
-    name: CKAN ${{ matrix.ckan-version }}
+    name: CKAN ${{ matrix.ckan-version }}, Solr ${{ matrix.solr-image }}
     runs-on: ubuntu-latest
     container:
       image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
     services:
       solr:
-        image: ckan/ckan-solr-dev:${{ matrix.ckan-version }}
+        image: ckan/ckan-solr:${{ matrix.solr-image }}
       postgres:
-        image: postgis/postgis:10-3.1
+        image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -45,22 +53,9 @@ jobs:
       PGPASSWORD: postgres
     
     steps:
-    - uses: actions/checkout@v2
-    - name: Create Database
-      run: |
-        psql --host=postgres --username=postgres --command="CREATE USER ckan_default WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
-        createdb --encoding=utf-8 --host=postgres --username=postgres --owner=ckan_default ckan_test
-        psql --host=postgres --username=postgres --command="CREATE USER datastore_write WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
-        psql --host=postgres --username=postgres --command="CREATE USER datastore_read WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
-        createdb --encoding=utf-8 --host=postgres --username=postgres --owner=datastore_write datastore_test
-    - name: Install harvester
-      run: |
-        git clone https://github.com/ckan/ckanext-harvest
-        cd ckanext-harvest
-        pip install -r pip-requirements.txt
-        pip install -r dev-requirements.txt
-        pip install -e .
-    - name: Install dependency (common)
+    - uses: actions/checkout@v3
+  
+    - name: Install dependencies (common)
       run: |
         apk add --no-cache \
           geos \
@@ -72,31 +67,63 @@ jobs:
           gcc \
           libxml2-dev \
           libxslt-dev
-    - name: Install dependency (python2)
-      if: ${{ matrix.ckan-version != '2.9' }}
+
+    - name: Enable pip cache
       run: |
-        apk add --no-cache \
-          python2-dev
-        pip install -r requirements-py2.txt
-    - name: Install dependency (python3)
+        echo "PIP version: $(pip --version)"
+        mkdir -p ~/.cache/pip
+        pip install -U pip --cache-dir ~/.cache/pip
+        chown -R $(whoami) ~/.cache/pip
+
+    - uses: actions/cache@v3
+      id: cache
+      with:
+        path: |
+          ~/.cache/pip
+          /usr/lib/python*/site-packages
+        key: ${{ runner.os }}-spatial-ckan-${{ matrix.ckan-version }}-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-spatial-ckan-${{ matrix.ckan-version }}-${{ hashFiles('requirements.txt') }}
+
+    - name: Patch to test pyproj
       if: ${{ matrix.ckan-version == '2.9' }}
       run: |
-        apk add --no-cache \
-          python3-dev
-        pip install -r requirements.txt
-    - name: Install requirements
+        pip install cython==0.29.36
+        pip install --no-use-pep517 pyproj==2.6.1
+
+    - name: Install dependencies from requirements.txt
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
+        pip install -r requirements.txt
+
+    - name: Install harvester
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        echo "Installing harvester"
+        git clone --depth 1 --branch ${{ matrix.harvester-version }} https://github.com/ckan/ckanext-harvest
+        cd ckanext-harvest
+        echo "upgrade pip"
+        pip install --upgrade pip
+        echo "Installing harvester requirements"
+        pip install -r pip-requirements.txt
+        echo "Installing harvester dev-requirements"
+        pip install -r dev-requirements.txt
+        echo "Installing harvester extension"
         pip install -e .
+
+    - name: Install requirements
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pip install -e .
+
+    - name: Replace default path to CKAN
+      run: |
         # Replace default path to CKAN core config file with the one on the container
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
-    - name: setup postgis
-      run: |
-        psql --host=postgres --username=postgres -d ckan_test --command="ALTER ROLE ckan_default WITH superuser;"
-        psql --host=postgres --username=postgres -d ckan_test --command="CREATE EXTENSION postgis;"
+
     - name: Run tests
       run: pytest --ckan-ini=test.ini --cov=ckanext.spatial --cov-report=xml --cov-append --disable-warnings ckanext/spatial/tests
 
     - name: Upload coverage report to codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml

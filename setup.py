@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
-from ckanext.spatial import __version__
 
-version = __version__
+version = '2.0.1'
 
 setup(
     name="ckanext-spatial",

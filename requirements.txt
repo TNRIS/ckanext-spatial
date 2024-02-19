@@ -4,7 +4,7 @@ argparse
 pyparsing>=2.1.10
 requests>=1.1.0
 cython==0.29.36
-pyproj==2.6.1; python_version < '3.9'
+pyproj==2.6.1
 
 
 Shapely==2.0.1

@@ -258,7 +258,7 @@ this.ckan.module('spatial-query', function ($, _) {
           var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
           var button = L.DomUtil.create('a', 'leaflet-control-custom-button', container);
-          button.innerHTML = '<i class="fa fa-pencil"></i>';
+          button.innerHTML = '<i class="fa fa-pencil"></i><span class="sr-only">' + module._('Draw an extent') + '</span>';
           button.title = module._('Draw an extent');
 
           L.DomEvent.on(button, 'click', function(e) {

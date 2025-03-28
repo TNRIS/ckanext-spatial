@@ -4,6 +4,11 @@ this.ckan.module('spatial-query', function ($, _) {
 
   return {
     options: {
+      map_config: {
+        type: "custom",
+        "custom_url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
+      },
       i18n: {
       },
       style: {
@@ -187,7 +192,7 @@ this.ckan.module('spatial-query', function ($, _) {
         this.options.map_config,
         {
           attributionControl: false,
-          drawControlTooltips: false
+          drawControlTooltips: false,
         }
       );
 

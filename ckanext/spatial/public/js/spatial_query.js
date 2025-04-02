@@ -175,7 +175,7 @@ this.ckan.module('spatial-query', function ($, _) {
             states: [{
               stateName: 'zoom-to-home',
               icon:      'fa-home',
-              title:     'Reset to initial view',
+              title:     'Zoom out to Texas',
               onClick: function(btn, map) {
                 map.fitBounds([[25.840437651866516, -106.64719063660635], [36.50050935248352, -93.5175532104321]])
               }
@@ -293,14 +293,34 @@ this.ckan.module('spatial-query', function ($, _) {
     },
 
     _createMap: function(container) {
+      
+      const baselayers = {
+        "<span class=\"fs-3\">OSM</span>": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
+        }),
+        "<span class=\"fs-3\">Street</span>": L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png", {
+          maxZoom: 19,
+          // https://www.arcgis.com/home/item.html?id=3b93337983e9436f8db950e38a8629af
+          attribution: "Tiles © Esri — Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCAN, Esri Japan, METI, Esri China (Hong Kong), NOSTRA, © OpenStreetMap contributors, and the GIS User Community"
+        }),
+        "<span class=\"fs-3\">Photo</span>": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png", {
+          maxZoom: 19,
+          // https://doc.arcgis.com/en/data-appliance/2022/maps/world-imagery.htm
+          attribution: "Tiles © Esri — Sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+        })
+      };
       map = ckan.commonLeafletMap(
         container,
         this.options.map_config,
         {
+          layers: [Object.values(baselayers).at(0)],
           attributionControl: false,
           drawControlTooltips: false,
-        }
+        },
       );
+      this.overlays = {};
+      L.control.layers(baselayers, this.overlays).addTo(map);
 
       return map;
 

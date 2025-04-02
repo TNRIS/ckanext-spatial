@@ -54,7 +54,18 @@ this.ckan.module('spatial-query', function ($, _) {
           '<h4 class="modal-title"></h4>',
           '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>',
           '</div>',
-          '<div class="modal-body"><div id="draw-map-container"></div></div>',
+          `<div class="modal-body">
+            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address.">
+            <button class="btn btn-primary" type="button" id="search-address-button" disabled>Search address</button>
+            <div id="search-dropdown" class="dropdown d-inline-flex d-none" style="width: fit-content">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false">
+                View results
+              </button>
+              <ul id="search-dropdown-list" class="dropdown-menu" style="z-index: 1001;" aria-labelledby="dropdownMenu2"></ul>
+            </div>
+            <span id="no-results-text" class="d-none text-danger">No results found.</span>
+            <div id="draw-map-container">
+          </div></div>`,
           '<div class="modal-footer">',
           '<button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal"></button>',
           '<button type="button" class="btn btn-primary apply disabled"></button>',
@@ -83,6 +94,54 @@ this.ckan.module('spatial-query', function ($, _) {
       this.el.ready(this._onReady);
     },
 
+    async runAddressSearch(search_query) {
+      this.searchAddressButton.innerText = "Searching...";
+      const nominatimEndpoint = `https://nominatim.openstreetmap.org/search?addressdetails=1&q=${search_query}&format=jsonv2&limit=10`;
+      fetch(nominatimEndpoint, {
+        headers: {
+          "User-Agent": "Texas Water Development Hub"
+        },
+        signal: AbortSignal.timeout(5000)
+      }).then((res) => res.json().then((data) => {
+        if (data && data.length > 1) {
+          this.searchResults = data.map((entry) => { return { "display_name": entry.display_name, "boundingbox": entry.boundingbox }; })
+          // Jump to first result.
+          const firstBoundingBox = this.searchResults[0]["boundingbox"];
+          this.drawMap.fitBounds([[firstBoundingBox[0], firstBoundingBox[2]], [firstBoundingBox[1], firstBoundingBox[3]]]);
+          const searchDropdownList = document.getElementById("search-dropdown-list");
+          // Remove previous search results
+          while (searchDropdownList.hasChildNodes()) {
+            searchDropdownList.removeChild(searchDropdownList.firstChild)
+          }
+          // Add search results to the dropdown
+          for (const entry of this.searchResults) {
+            const entryLi = document.createElement("li");
+            const entryButton = document.createElement("button");
+            entryButton.classList.add("dropdown-item");
+            entryButton.type = "button";
+            // entryButton.innerText = `${entry["display_name"]} | (${entry["lat"]}, ${entry["lon"]})`;
+            entryButton.innerText = entry["display_name"];
+            entryButton.onclick = () => {
+              const boundingbox = entry["boundingbox"];
+              this.drawMap.fitBounds([[boundingbox[0], boundingbox[2]], [boundingbox[1], boundingbox[3]]]);
+            }
+            entryLi.appendChild(entryButton);
+            searchDropdownList.appendChild(entryLi);
+          };
+          this.searchDropdown.classList.remove("d-none");
+        }
+        else if (data && data.length > 0) {
+          const boundingBox = data[0]["boundingbox"];
+          this.drawMap.fitBounds([[boundingBox[0], boundingBox[2]], [boundingBox[1], boundingBox[3]]]);
+        } else {
+          this.noResultsText.classList.remove("d-none");
+        }
+      })).finally(() => {
+        this.searchAddressButton.removeAttribute("disabled")
+        this.searchAddressButton.innerText = "Search address";
+      });
+    },
+
     _getBootstrapVersion: function () {
       return $.fn.modal.Constructor.VERSION.split(".")[0];
     },
@@ -95,7 +154,7 @@ this.ckan.module('spatial-query', function ($, _) {
         element.modal({show: false});
 
         element.find('.modal-title').text(this._('Please draw query extent in the map:'));
-        element.find('.btn-primary').text(this._('Apply'));
+        element.find('.apply').text(this._('Apply'));
         element.find('.btn-cancel').text(this._('Cancel'));
 
         var module = this;
@@ -145,6 +204,41 @@ this.ckan.module('spatial-query', function ($, _) {
 
           $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
           element.find('.btn-primary').focus()
+
+          // Search address feature
+          module.searchAddressBox = document.getElementById('search-address-box');
+          module.searchAddressButton = document.getElementById('search-address-button');
+          module.searchDropdown = document.getElementById("search-dropdown");
+          module.noResultsText = document.getElementById("no-results-text");
+          // Disable default enter key behavior when pressing enter in the searchbox
+          module.searchAddressBox.onkeydown = (e) => {
+            module.noResultsText.classList.add("d-none");
+            module.searchDropdown.classList.add("d-none");
+            if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
+              e?.preventDefault();
+            }
+          }
+          module.searchAddressBox.onkeyup = (e) => {
+            e?.preventDefault();
+            // When there is a value in the searchbox, enable the search button
+            if (module.searchAddressBox.value) {
+              module.searchAddressButton.removeAttribute("disabled")
+            }
+            // When the searchbox is empty, disable the search button
+            else {
+              module.searchAddressButton.setAttribute("disabled", true)
+            }
+            // If the user presses the Enter key in the searchbox and the search button is not disabled, run the search
+            if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
+              module.searchAddressButton.click();
+            }
+          }
+          // If the search button is clicked, disable the search button and run the search
+          module.searchAddressButton.onclick = (e) => {
+            e?.preventDefault();
+            module.searchAddressButton.setAttribute("disabled", true);
+            module.runAddressSearch(module.searchAddressBox.value);
+          }
         })
 
         this.modal.on('hidden.bs.modal', function () {

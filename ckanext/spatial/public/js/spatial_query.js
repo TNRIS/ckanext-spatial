@@ -169,7 +169,19 @@ this.ckan.module('spatial-query', function ($, _) {
           }
           var container = element.find('#draw-map-container')[0];
           module.drawMap = map = module._createMap(container);
-
+          // Home button
+          initEasyButton(L);
+          const homeButton = L.easyButton({
+            states: [{
+              stateName: 'zoom-to-home',
+              icon:      'fa-home',
+              title:     'Reset to initial view',
+              onClick: function(btn, map) {
+                map.fitBounds([[25.840437651866516, -106.64719063660635], [36.50050935248352, -93.5175532104321]])
+              }
+            }]
+          });
+          homeButton.addTo(module.drawMap);
           // Initialize the draw control
           var draw = new L.Control.Draw({
             position: 'topright',

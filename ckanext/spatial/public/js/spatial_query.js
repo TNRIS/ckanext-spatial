@@ -356,6 +356,8 @@ this.ckan.module('spatial-query', function ($, _) {
 
       // OK map time
       this.mainMap = map = this._createMap('dataset-map-container');
+      // Remove layer selection from small dataset map
+      document.getElementById("dataset-map-container").querySelector(".leaflet-control-layers").style.display = "none";
 
       var expandButton = L.Control.extend({
         position: 'topright',

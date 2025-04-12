@@ -215,6 +215,8 @@ this.ckan.module('spatial-query', function ($, _) {
           });
 
           categoriesElement.addEventListener("choice", (e) => {
+            if (module.geojson)
+              module.geojson.remove();
             const category = e.detail.label;
             const categoryPath = e.detail.value;
             // Display the features selector if the user selects a category, otherwise hide it
@@ -228,6 +230,64 @@ this.ckan.module('spatial-query', function ($, _) {
               .then(data => {
                 choices.clearChoices();
                 const currentChoicesValues = choices.getValue(true);
+                module.geojson = L.geoJSON({ features: [], type: 'FeatureCollection' }, {
+                  style: function (feature, i) {
+                    const colorIndex = feature.properties.id % 8;
+                    const color = ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"];
+                    return {
+                      fillColor: color[colorIndex],
+                      color: color[colorIndex]
+                    };
+                  }
+                }).bindPopup((e) => {
+                  const container = jQuery('<ul>', { class: "fs-3" });
+          
+                  container.append(
+                    jQuery('<li>', { class: 'list-member' })
+                      .text(`Name: ${e.feature.properties.name}`)
+                  );
+                  container.append(
+                    jQuery('<li>', { class: 'list-member' })
+                      .text(`Type: ${category}`)
+                  );
+          
+                  const buttonContainer = jQuery('<li>', { class: 'list-member' });
+                  const button = jQuery('<button>', {
+                    class: 'list-button',
+                    text: 'Select this feature',
+                    click: (f) => {
+                      f.preventDefault();
+                      const currentChoicesValuesSelect = choices.getValue();
+                      if (!(currentChoicesValuesSelect.filter((c) => c.value.name === e.feature.properties.name && c.value.type === category).length > 0)) {
+                        choices.setChoices(
+                          [{ "label": e.feature.properties.name, "value": {
+                              "name": e.feature.properties.name,
+                              "type": category,
+                              "geometry": JSON.stringify(e.feature.geometry),
+                            },
+                            "selected": true
+                          }],
+                          "value",
+                          "label",
+                          false
+                        );
+                        const event = new CustomEvent("choice", { detail: {
+                          "value": {
+                          "name": e.feature.properties.name,
+                          "type": category,
+                          "geometry": JSON.stringify(e.feature.geometry),
+                        }}});
+                        choicesElement.dispatchEvent(event);
+                      }
+                    }
+                  });
+          
+                  buttonContainer.append(button);
+                  container.append(buttonContainer);
+                  return container[0];
+                });
+                module.geojson.addData(data);
+                module.geojson.addTo(map);
                 choices.setChoices(
                   data.features.map((feature) => ({ "label": feature.properties.name, "value": {
                       "name": feature.properties.name,

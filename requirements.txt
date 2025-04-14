@@ -6,7 +6,7 @@ requests>=1.1.0
 cython==0.29.36
 pyproj
 
-
+numpy>=1.26,<2
 Shapely==2.0.1
 OWSLib==0.28.1
 geojson==3.0.1

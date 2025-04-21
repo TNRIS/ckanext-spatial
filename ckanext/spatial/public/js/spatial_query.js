@@ -67,11 +67,12 @@ this.ckan.module('spatial-query', function ($, _) {
             </div>
             <span id="no-results-text" class="d-none text-danger">No results found.</span>
             <div>
-              <div class="d-flex gap-2 align-items-baseline mb-2">
+              <div class="d-flex gap-2 align-items-middle mb-2">
                 <div style="width: 45%;">
                   <label for="public-search-categories">Select a feature category</label>
                   <select placeholder="Click here to select a category" id="public-search-categories" class="js-choice-category"></select>
                 </div>
+                <button id="clear-categories-button" class="d-none btn btn-danger" style="align-self: center; margin-top: 2rem;">Clear category</button>
                 <div id="choices-div" class="d-none" style="max-width: 55%;">
                   <label for="public-search-choices">Select features to view on the map</label>
                   <select multiple placeholder="Click here to select a feature" id="public-search-choices" class="js-choice"></select>
@@ -206,6 +207,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
           // Set up named place selector for features using choices.js (https://github.com/Choices-js/Choices)
           const choicesElement = document.querySelector(".js-choice");
+          const clearCategoryButton = document.querySelector("#clear-categories-button");
           const choicesDiv = document.querySelector("#choices-div");
           const choices = new Choices(choicesElement, {
             removeItemButton: true,
@@ -221,7 +223,7 @@ this.ckan.module('spatial-query', function ($, _) {
             const categoryPath = e.detail.value;
             // Display the features selector if the user selects a category, otherwise hide it
             if (category && categoryPath) {
-              choicesDiv.classList.remove("d-none");
+              // choicesDiv.classList.remove("d-none");
             } else {
               choicesDiv.classList.add("d-none");
             }
@@ -232,8 +234,8 @@ this.ckan.module('spatial-query', function ($, _) {
                 const currentChoicesValues = choices.getValue(true);
                 module.geojson = L.geoJSON({ features: [], type: 'FeatureCollection' }, {
                   style: function (feature, i) {
-                    const colorIndex = feature.properties.id % 8;
-                    const color = ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"];
+                    const colorIndex = feature.properties.id % 1;
+                    const color = ["#66aaee", "#abaadd"];
                     return {
                       fillColor: color[colorIndex],
                       color: color[colorIndex]
@@ -250,40 +252,6 @@ this.ckan.module('spatial-query', function ($, _) {
                     jQuery('<li>', { class: 'list-member' })
                       .text(`Type: ${category}`)
                   );
-          
-                  const buttonContainer = jQuery('<li>', { class: 'list-member' });
-                  const button = jQuery('<button>', {
-                    class: 'list-button',
-                    text: 'Select this feature',
-                    click: (f) => {
-                      f.preventDefault();
-                      const currentChoicesValuesSelect = choices.getValue();
-                      if (!(currentChoicesValuesSelect.filter((c) => c.value.name === e.feature.properties.name && c.value.type === category).length > 0)) {
-                        choices.setChoices(
-                          [{ "label": e.feature.properties.name, "value": {
-                              "name": e.feature.properties.name,
-                              "type": category,
-                              "geometry": JSON.stringify(e.feature.geometry),
-                            },
-                            "selected": true
-                          }],
-                          "value",
-                          "label",
-                          false
-                        );
-                        const event = new CustomEvent("choice", { detail: {
-                          "value": {
-                          "name": e.feature.properties.name,
-                          "type": category,
-                          "geometry": JSON.stringify(e.feature.geometry),
-                        }}});
-                        choicesElement.dispatchEvent(event);
-                      }
-                    }
-                  });
-          
-                  buttonContainer.append(button);
-                  container.append(buttonContainer);
                   return container[0];
                 });
                 module.geojson.addData(data);
@@ -302,6 +270,16 @@ this.ckan.module('spatial-query', function ($, _) {
               .catch(err => {
                 console.error("Error while attempting to get features data.");
               });
+            clearCategoryButton.classList.remove("d-none");
+            clearCategoryButton.onclick = (e) => { categories.clearChoices(false, true); categories.setChoices([
+              {
+                label: "Features",
+                choices: Object.keys(window.__named_places).map((key) => ({ label: key, value: window.__named_places[key] })),
+              }
+              ]);
+              module.geojson.clearLayers();
+              clearCategoryButton.classList.add("d-none");
+            };
           });
           choicesElement.addEventListener("choice", (e) => {
             const layer = L.geoJSON();

@@ -7,3 +7,7 @@
 .leaflet-control-attribution {
   font-size: 11px;
 }
+.choices__inner {
+  max-height: 36px;
+  overflow-y: scroll;
+}

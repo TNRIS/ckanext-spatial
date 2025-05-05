@@ -57,7 +57,10 @@ this.ckan.module('spatial-query', function ($, _) {
           `<div class="modal-body">
             <p style="margin-bottom: 0;">Please use the pencil tool on the map to draw a rectangle to filter by location.</p>
             <p>You may also use the address search and select tools to help find a location.</p>
-            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content;">
+            <div class="search-address-wrapper" style="position: relative; display: inline-block;">
+            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content; padding-right: 40px;" />
+            <button id="search-address-clear-button" type="button" class="d-none" style="position: absolute; top: 0; right: 0; border: none; background-color: transparent; cursor: pointer;">X</button>
+            </div>
             <button class="btn btn-primary" type="button" id="search-address-button" disabled style="height: fit-content;">Search address</button>
             <div id="search-dropdown" class="dropdown d-inline-flex d-none" style="width: fit-content">
               <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -387,11 +390,19 @@ this.ckan.module('spatial-query', function ($, _) {
           // Search address feature
           module.searchAddressBox = document.getElementById('search-address-box');
           module.searchAddressButton = document.getElementById('search-address-button');
+          module.searchAddressClearButton = document.getElementById('search-address-clear-button');
+          module.searchAddressClearButton.onclick = (e) => {
+            e?.preventDefault();
+            module.searchAddressBox.value = "";
+            module.searchAddressButton.setAttribute("disabled", true)
+            module.searchAddressClearButton.classList.add("d-none");
+          }
           module.searchDropdown = document.getElementById("search-dropdown");
           module.noResultsText = document.getElementById("no-results-text");
           // Disable default enter key behavior when pressing enter in the searchbox
           module.searchAddressBox.onkeydown = (e) => {
             module.noResultsText.classList.add("d-none");
+            module.searchAddressClearButton.classList.remove("d-none");
             module.searchDropdown.classList.add("d-none");
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
               e?.preventDefault();
@@ -406,6 +417,7 @@ this.ckan.module('spatial-query', function ($, _) {
             // When the searchbox is empty, disable the search button
             else {
               module.searchAddressButton.setAttribute("disabled", true)
+              module.searchAddressClearButton.classList.add("d-none");
             }
             // If the user presses the Enter key in the searchbox and the search button is not disabled, run the search
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {

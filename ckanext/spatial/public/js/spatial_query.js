@@ -353,8 +353,8 @@ this.ckan.module('spatial-query', function ($, _) {
           });
           homeButton.addTo(module.drawMap);
           // Initialize the draw control
-          var draw = new L.Control.Draw({
-            position: 'topright',
+          map.drawControl = new L.Control.Draw({
+            position: 'topleft',
             draw: {
               polyline: false,
               polygon: false,
@@ -364,8 +364,21 @@ this.ckan.module('spatial-query', function ($, _) {
               rectangle: {shapeOptions: module.options.style}
             }
           });
-
-          map.addControl(draw);
+          map.addControl(map.drawControl);
+          // Pan (drag hand) button
+          const panButton = L.easyButton({
+            states: [{
+              stateName: 'pan',
+              icon:      'fa-hand',
+              title:     'Drag to pan',
+              onClick: function(btn, map) {
+                for (var toolbarId in map.drawControl._toolbars) {
+                    map.drawControl._toolbars[toolbarId].disable();
+                }
+              }
+            }]
+          });
+          panButton.addTo(module.drawMap);
 
           module._setPreviousBBBox(map, zoom=false);
           map.fitBounds(module.mainMap.getBounds());
@@ -433,6 +446,9 @@ this.ckan.module('spatial-query', function ($, _) {
         })
 
         this.modal.on('hidden.bs.modal', function () {
+          for (var toolbarId in map.drawControl._toolbars) {
+            map.drawControl._toolbars[toolbarId].disable();
+          }
           module._onCancel()
         });
 

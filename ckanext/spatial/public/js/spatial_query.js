@@ -57,7 +57,10 @@ this.ckan.module('spatial-query', function ($, _) {
           `<div class="modal-body">
             <p style="margin-bottom: 0;">Please use the pencil tool on the map to draw a rectangle to filter by location.</p>
             <p>You may also use the address search and select tools to help find a location.</p>
-            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content;">
+            <div class="search-address-wrapper" style="position: relative; display: inline-block;">
+            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content; padding-right: 40px;" />
+            <button id="search-address-clear-button" type="button" class="d-none" style="position: absolute; top: 0; right: 0; border: none; background-color: transparent; cursor: pointer;">X</button>
+            </div>
             <button class="btn btn-primary" type="button" id="search-address-button" disabled style="height: fit-content;">Search address</button>
             <div id="search-dropdown" class="dropdown d-inline-flex d-none" style="width: fit-content">
               <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -67,11 +70,12 @@ this.ckan.module('spatial-query', function ($, _) {
             </div>
             <span id="no-results-text" class="d-none text-danger">No results found.</span>
             <div>
-              <div class="d-flex gap-2 align-items-baseline mb-2">
+              <div class="d-flex gap-2 align-items-middle mb-2">
                 <div style="width: 45%;">
                   <label for="public-search-categories">Select a feature category</label>
                   <select placeholder="Click here to select a category" id="public-search-categories" class="js-choice-category"></select>
                 </div>
+                <button id="clear-categories-button" class="d-none btn btn-danger" style="align-self: center; margin-top: 2rem;">Clear category</button>
                 <div id="choices-div" class="d-none" style="max-width: 55%;">
                   <label for="public-search-choices">Select features to view on the map</label>
                   <select multiple placeholder="Click here to select a feature" id="public-search-choices" class="js-choice"></select>
@@ -206,6 +210,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
           // Set up named place selector for features using choices.js (https://github.com/Choices-js/Choices)
           const choicesElement = document.querySelector(".js-choice");
+          const clearCategoryButton = document.querySelector("#clear-categories-button");
           const choicesDiv = document.querySelector("#choices-div");
           const choices = new Choices(choicesElement, {
             removeItemButton: true,
@@ -221,7 +226,7 @@ this.ckan.module('spatial-query', function ($, _) {
             const categoryPath = e.detail.value;
             // Display the features selector if the user selects a category, otherwise hide it
             if (category && categoryPath) {
-              choicesDiv.classList.remove("d-none");
+              // choicesDiv.classList.remove("d-none");
             } else {
               choicesDiv.classList.add("d-none");
             }
@@ -232,8 +237,8 @@ this.ckan.module('spatial-query', function ($, _) {
                 const currentChoicesValues = choices.getValue(true);
                 module.geojson = L.geoJSON({ features: [], type: 'FeatureCollection' }, {
                   style: function (feature, i) {
-                    const colorIndex = feature.properties.id % 8;
-                    const color = ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"];
+                    const colorIndex = feature.properties.id % 1;
+                    const color = ["#66aaee", "#abaadd"];
                     return {
                       fillColor: color[colorIndex],
                       color: color[colorIndex]
@@ -250,40 +255,6 @@ this.ckan.module('spatial-query', function ($, _) {
                     jQuery('<li>', { class: 'list-member' })
                       .text(`Type: ${category}`)
                   );
-          
-                  const buttonContainer = jQuery('<li>', { class: 'list-member' });
-                  const button = jQuery('<button>', {
-                    class: 'list-button',
-                    text: 'Select this feature',
-                    click: (f) => {
-                      f.preventDefault();
-                      const currentChoicesValuesSelect = choices.getValue();
-                      if (!(currentChoicesValuesSelect.filter((c) => c.value.name === e.feature.properties.name && c.value.type === category).length > 0)) {
-                        choices.setChoices(
-                          [{ "label": e.feature.properties.name, "value": {
-                              "name": e.feature.properties.name,
-                              "type": category,
-                              "geometry": JSON.stringify(e.feature.geometry),
-                            },
-                            "selected": true
-                          }],
-                          "value",
-                          "label",
-                          false
-                        );
-                        const event = new CustomEvent("choice", { detail: {
-                          "value": {
-                          "name": e.feature.properties.name,
-                          "type": category,
-                          "geometry": JSON.stringify(e.feature.geometry),
-                        }}});
-                        choicesElement.dispatchEvent(event);
-                      }
-                    }
-                  });
-          
-                  buttonContainer.append(button);
-                  container.append(buttonContainer);
                   return container[0];
                 });
                 module.geojson.addData(data);
@@ -302,6 +273,16 @@ this.ckan.module('spatial-query', function ($, _) {
               .catch(err => {
                 console.error("Error while attempting to get features data.");
               });
+            clearCategoryButton.classList.remove("d-none");
+            clearCategoryButton.onclick = (e) => { categories.clearChoices(false, true); categories.setChoices([
+              {
+                label: "Features",
+                choices: Object.keys(window.__named_places).map((key) => ({ label: key, value: window.__named_places[key] })),
+              }
+              ]);
+              module.geojson.clearLayers();
+              clearCategoryButton.classList.add("d-none");
+            };
           });
           choicesElement.addEventListener("choice", (e) => {
             const layer = L.geoJSON();
@@ -372,8 +353,8 @@ this.ckan.module('spatial-query', function ($, _) {
           });
           homeButton.addTo(module.drawMap);
           // Initialize the draw control
-          var draw = new L.Control.Draw({
-            position: 'topright',
+          map.drawControl = new L.Control.Draw({
+            position: 'topleft',
             draw: {
               polyline: false,
               polygon: false,
@@ -383,8 +364,21 @@ this.ckan.module('spatial-query', function ($, _) {
               rectangle: {shapeOptions: module.options.style}
             }
           });
-
-          map.addControl(draw);
+          map.addControl(map.drawControl);
+          // Pan (drag hand) button
+          const panButton = L.easyButton({
+            states: [{
+              stateName: 'pan',
+              icon:      'fa-hand',
+              title:     'Drag to pan',
+              onClick: function(btn, map) {
+                for (var toolbarId in map.drawControl._toolbars) {
+                    map.drawControl._toolbars[toolbarId].disable();
+                }
+              }
+            }]
+          });
+          panButton.addTo(module.drawMap);
 
           module._setPreviousBBBox(map, zoom=false);
           map.fitBounds(module.mainMap.getBounds());
@@ -409,11 +403,19 @@ this.ckan.module('spatial-query', function ($, _) {
           // Search address feature
           module.searchAddressBox = document.getElementById('search-address-box');
           module.searchAddressButton = document.getElementById('search-address-button');
+          module.searchAddressClearButton = document.getElementById('search-address-clear-button');
+          module.searchAddressClearButton.onclick = (e) => {
+            e?.preventDefault();
+            module.searchAddressBox.value = "";
+            module.searchAddressButton.setAttribute("disabled", true)
+            module.searchAddressClearButton.classList.add("d-none");
+          }
           module.searchDropdown = document.getElementById("search-dropdown");
           module.noResultsText = document.getElementById("no-results-text");
           // Disable default enter key behavior when pressing enter in the searchbox
           module.searchAddressBox.onkeydown = (e) => {
             module.noResultsText.classList.add("d-none");
+            module.searchAddressClearButton.classList.remove("d-none");
             module.searchDropdown.classList.add("d-none");
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
               e?.preventDefault();
@@ -428,6 +430,7 @@ this.ckan.module('spatial-query', function ($, _) {
             // When the searchbox is empty, disable the search button
             else {
               module.searchAddressButton.setAttribute("disabled", true)
+              module.searchAddressClearButton.classList.add("d-none");
             }
             // If the user presses the Enter key in the searchbox and the search button is not disabled, run the search
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
@@ -443,6 +446,9 @@ this.ckan.module('spatial-query', function ($, _) {
         })
 
         this.modal.on('hidden.bs.modal', function () {
+          for (var toolbarId in map.drawControl._toolbars) {
+            map.drawControl._toolbars[toolbarId].disable();
+          }
           module._onCancel()
         });
 

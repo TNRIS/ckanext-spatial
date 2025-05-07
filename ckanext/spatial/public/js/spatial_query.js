@@ -449,6 +449,11 @@ this.ckan.module('spatial-query', function ($, _) {
           for (var toolbarId in map.drawControl._toolbars) {
             map.drawControl._toolbars[toolbarId].disable();
           }
+          document.getElementById('search-address-box').value = "";
+          document.getElementById('search-address-button').setAttribute("disabled", true);
+          document.getElementById('search-address-clear-button').classList.add("d-none");
+          document.getElementById('search-address-clear-button').classList.add("d-none");
+          document.getElementById('search-dropdown').classList.add("d-none");
           module._onCancel()
         });
 

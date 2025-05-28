@@ -111,7 +111,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
     async runAddressSearch(search_query) {
       this.searchAddressButton.innerText = "Searching...";
-      const nominatimEndpoint = `https://nominatim.openstreetmap.org/search?addressdetails=1&q=${search_query}&format=jsonv2&limit=10`;
+      const nominatimEndpoint = `https://nominatim.tnris.org/search?addressdetails=1&q=${search_query}&format=jsonv2&limit=10`;
       fetch(nominatimEndpoint, {
         headers: {
           "User-Agent": "Texas Water Development Hub"
@@ -119,7 +119,10 @@ this.ckan.module('spatial-query', function ($, _) {
         signal: AbortSignal.timeout(5000)
       }).then((res) => res.json().then((data) => {
         if (data && data.length > 1) {
-          this.searchResults = data.map((entry) => { return { "display_name": entry.display_name, "boundingbox": entry.boundingbox }; })
+          // this.searchResults = data.map((entry) => { return { "display_name": entry.display_name, "boundingbox": entry.boundingbox }; })
+          this.searchResults = data
+                              .filter(entry => entry.display_name.includes("United States"))
+                              .map((entry) => { return { "display_name": entry.display_name, "boundingbox": entry.boundingbox }; })
           // Jump to first result.
           const firstBoundingBox = this.searchResults[0]["boundingbox"];
           this.drawMap.fitBounds([[firstBoundingBox[0], firstBoundingBox[2]], [firstBoundingBox[1], firstBoundingBox[3]]]);

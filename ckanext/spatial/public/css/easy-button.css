@@ -54,3 +54,11 @@
   height: 30px;
   line-height: 30px;
 }
+
+.zoom-to-home-active .fa-home {
+  font-size: 1rem;
+}
+
+.pan-active .fa-hand {
+  font-size: 1rem;
+}

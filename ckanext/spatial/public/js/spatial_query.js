@@ -203,7 +203,6 @@ this.ckan.module('spatial-query', function ($, _) {
           const categories = new Choices(categoriesElement, {
             choices: [
               {
-                label: "Features",
                 choices: Object.keys(window.__named_places).map((key) => ({ label: key, value: window.__named_places[key] })),
               }
             ],
@@ -279,7 +278,6 @@ this.ckan.module('spatial-query', function ($, _) {
             clearCategoryButton.classList.remove("d-none");
             clearCategoryButton.onclick = (e) => { categories.clearChoices(false, true); categories.setChoices([
               {
-                label: "Features",
                 choices: Object.keys(window.__named_places).map((key) => ({ label: key, value: window.__named_places[key] })),
               }
               ]);

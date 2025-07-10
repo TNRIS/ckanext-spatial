@@ -206,11 +206,13 @@ class SpatialQuery(SpatialQueryMixin, p.SingletonPlugin):
             #if " statewide:\"true\"" not in search_params["fq"] and " statewide:\"false\"" not in search_params["fq"]:
             #    search_params["fq"] = search_params["fq"] + " -place_keywords:\"Texas\""
 
+            """
             if " statewide:\"true\"" in search_params["fq"]:
                 search_params["fq"] = search_params["fq"].replace(" statewide:\"true\"", "")
                 search_params["fq"] = search_params["fq"].replace(" -place_keywords:\"Texas\"", "")
             if " statewide:\"false\"" in search_params["fq"]:
                 search_params["fq"] = search_params["fq"].replace(" statewide:\"false\"", " -place_keywords:\"Texas\"")
+            """
 
         input_bbox = search_params.get('extras', {}).get('ext_bbox', None)
 

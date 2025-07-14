@@ -201,18 +201,11 @@ class SpatialQuery(SpatialQueryMixin, p.SingletonPlugin):
         fq = search_params.get("fq", None)
         if fq:
 
-            # Turning off this conditional because ity is excluding statewide datasets from Organization search catalogs. 
-            # Where is this relevant otherwise?
-            #if " statewide:\"true\"" not in search_params["fq"] and " statewide:\"false\"" not in search_params["fq"]:
-            #    search_params["fq"] = search_params["fq"] + " -place_keywords:\"Texas\""
-
-            """
-            if " statewide:\"true\"" in search_params["fq"]:
-                search_params["fq"] = search_params["fq"].replace(" statewide:\"true\"", "")
-                search_params["fq"] = search_params["fq"].replace(" -place_keywords:\"Texas\"", "")
-            if " statewide:\"false\"" in search_params["fq"]:
-                search_params["fq"] = search_params["fq"].replace(" statewide:\"false\"", " -place_keywords:\"Texas\"")
-            """
+            if "statewide:\"yes\"" in search_params["fq"]:
+                search_params["fq"] = search_params["fq"].replace("statewide:\"yes\"", "")
+                search_params["fq"] = search_params["fq"].replace("-place_keywords:\"Texas\"", "")
+            if "statewide:\"no\"" in search_params["fq"]:
+                search_params["fq"] = search_params["fq"].replace("statewide:\"no\"", "-place_keywords:\"Texas\"")
 
         input_bbox = search_params.get('extras', {}).get('ext_bbox', None)
 
@@ -223,6 +216,8 @@ class SpatialQuery(SpatialQueryMixin, p.SingletonPlugin):
                 raise SearchError('Wrong bounding box provided')
             search_params = search_backends[search_backend]().search_params(
                 bbox, search_params)
+
+        log.debug("Search params: {}".format(search_params))
         return search_params
 
 

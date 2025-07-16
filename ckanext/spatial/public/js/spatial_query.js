@@ -551,19 +551,12 @@ this.ckan.module('spatial-query', function ($, _) {
       let map;
       let form = $('#dataset-search-form');
       let bbox_input_id = 'ext_bbox';
-      let statewide = 'statewide';
 
       // Add necessary field to the search form if not already created
       if ($("#" + bbox_input_id).length === 0) {
         $('<input type="hidden" />').attr({'id': bbox_input_id, 'name': bbox_input_id}).appendTo(form);
       }
       module.ext_bbox_input = $('#dataset-search-form #ext_bbox');
-      // Add necessary field to the search form if not already created
-      if ($("#" + statewide).length === 0) {
-        $('<input type="hidden" />').attr({'id': statewide, 'name': statewide}).appendTo(form);
-      }
-      module.statewide = $('#dataset-search-form #statewide');
-
 
       // OK map time
       this.mainMap = map = this._createMap('dataset-map-container');

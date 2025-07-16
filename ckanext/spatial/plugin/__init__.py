@@ -200,13 +200,11 @@ class SpatialQuery(SpatialQueryMixin, p.SingletonPlugin):
         search_backend = self._get_search_backend()
         fq = search_params.get("fq", None)
         if fq:
-
             if "statewide:\"yes\"" in search_params["fq"]:
                 search_params["fq"] = search_params["fq"].replace("statewide:\"yes\"", "")
                 search_params["fq"] = search_params["fq"].replace("-place_keywords:\"Texas\"", "")
             if "statewide:\"no\"" in search_params["fq"]:
                 search_params["fq"] = search_params["fq"].replace("statewide:\"no\"", "-place_keywords:\"Texas\"")
-
         input_bbox = search_params.get('extras', {}).get('ext_bbox', None)
 
         if input_bbox:

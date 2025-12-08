@@ -28,9 +28,9 @@ spatial_query_js:
     - js/vendor/leaflet/1.9.3/leaflet.js
     - js/vendor/leaflet.draw/0.4.14/leaflet.draw.js
     - js/vendor/leaflet-providers.js
-    - gazetteer/js/topojson-client.js
-    - gazetteer/js/topojson-server.js
-    - gazetteer/js/topojson-simplify.js
+    - js/topojson-client.js
+    - js/topojson-server.js
+    - js/topojson-simplify.js
     - js/named-places-data.js
     - js/choices.min.js
     - js/easy-button.js

@@ -7,7 +7,9 @@ window.__named_places = {
     "Major River Basins": "Major_River_Basins.json",
     "Minor Aquifers": "Minor_Aquifers.json",
     "Public Water Systems": "Public_Water_Systems.json",
+    "Reservoirs": "Reservoirs.json",
     "River Authorities": "River_Authorities.json",
     "Statewide": "Statewide.json",
+    "TX_HUC08_Watersheds.json": "TX_HUC08_Watersheds.json",
     "Water Planning Regions": "Water_Planning_Regions.json"
 };

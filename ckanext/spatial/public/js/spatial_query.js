@@ -12,10 +12,10 @@ this.ckan.module('spatial-query', function ($, _) {
       i18n: {
       },
       style: {
-        color: '#F06F64',
+        color: '#009E89',
         weight: 2,
         opacity: 1,
-        fillColor: '#F06F64',
+        fillColor: '#009E89',
         fillOpacity: 0.1,
         clickable: false
       },
@@ -56,12 +56,12 @@ this.ckan.module('spatial-query', function ($, _) {
           '</div>',
           `<div class="modal-body">
             <p style="margin-bottom: 0;">Please use the pencil tool on the map to draw a rectangle to filter by location.</p>
-            <p>You may also use the address search and select tools to help find a location.</p>
+            <p>You may also use the search bar and select tools to help find a location.</p>
             <div class="search-address-wrapper" style="position: relative; display: inline-block;">
-            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content; padding-right: 40px;" />
-            <button id="search-address-clear-button" type="button" class="d-none" style="position: absolute; top: 0; right: 0; border: none; background-color: transparent; cursor: pointer;">X</button>
+            <input class="rounded-2" id="search-address-box" type="text" placeholder="e.g., address, lat/long, or county name" style="height: 35px; padding-right: 40px;   width: 150%;" />
+            <button id="search-address-clear-button" type="button" class="d-none" style="position: absolute; top: 0; margin-left: 140%; border: none; background-color: transparent; cursor: pointer;">X</button>
             </div>
-            <button class="btn btn-primary" type="button" id="search-address-button" disabled style="height: fit-content;">Search address</button>
+            <button class="btn btn-primary" type="button" id="search-address-button" disabled style="height: fit-content; margin-left: 130px;">Search</button>
             <div id="search-dropdown" class="dropdown d-inline-flex d-none" style="width: fit-content">
               <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false">
                 View results
@@ -72,10 +72,10 @@ this.ckan.module('spatial-query', function ($, _) {
             <div>
               <div class="d-flex gap-2 align-items-middle mb-2">
                 <div style="width: 45%;">
-                  <label for="public-search-categories">Select a feature category</label>
-                  <select placeholder="Click here to select a category" id="public-search-categories" class="js-choice-category"></select>
+                  <label for="public-search-categories">Select a reference layer to view on the map:</label>
+                  <select placeholder="Search for a category" id="public-search-categories" class="js-choice-category"></select>
                 </div>
-                <button id="clear-categories-button" class="d-none btn btn-danger" style="align-self: center; margin-top: 2rem;">Clear category</button>
+                <button id="clear-categories-button" class="d-none btn btn-default btn-lg" style="align-self: center; margin-top: 2rem;">Clear</button>
                 <div id="choices-div" class="d-none" style="max-width: 55%;">
                   <label for="public-search-choices">Select features to view on the map</label>
                   <select multiple placeholder="Click here to select a feature" id="public-search-choices" class="js-choice"></select>
@@ -160,7 +160,7 @@ this.ckan.module('spatial-query', function ($, _) {
         }
       })).finally(() => {
         this.searchAddressButton.removeAttribute("disabled")
-        this.searchAddressButton.innerText = "Search address";
+        this.searchAddressButton.innerText = "Search";
       });
     },
     _getData: async function (value) {
@@ -207,7 +207,7 @@ this.ckan.module('spatial-query', function ($, _) {
               }
             ],
             searchResultLimit: -1,
-            placeholderValue: "Click here to select a category"
+            placeholderValue: "Search for a category"
           });
 
           // Set up named place selector for features using choices.js (https://github.com/Choices-js/Choices)
@@ -240,7 +240,7 @@ this.ckan.module('spatial-query', function ($, _) {
                 module.geojson = L.geoJSON({ features: [], type: 'FeatureCollection' }, {
                   style: function (feature, i) {
                     const colorIndex = feature.properties.id % 1;
-                    const color = ["#66aaee", "#abaadd"];
+                    const color = ["#6B616A", "#A5A09C"];
                     return {
                       fillColor: color[colorIndex],
                       color: color[colorIndex]

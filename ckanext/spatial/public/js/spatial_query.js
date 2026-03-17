@@ -353,6 +353,7 @@ this.ckan.module('spatial-query', function ($, _) {
             }]
           });
           homeButton.addTo(module.drawMap);
+
           // Initialize the draw control
           map.drawControl = new L.Control.Draw({
             position: 'topleft',
@@ -366,6 +367,33 @@ this.ckan.module('spatial-query', function ($, _) {
             }
           });
           map.addControl(map.drawControl);
+
+          // Clear drawing button
+          const clearButton = L.easyButton({
+            states: [{
+              stateName: 'clear-drawing',
+              icon: 'fa-eraser',
+              title: 'Clear a Rectangle',
+              onClick: function(btn, map) {
+                for (var toolbarId in map.drawControl._toolbars) {
+                  map.drawControl._toolbars[toolbarId].disable();
+                }
+
+                if (module.extentLayer) {
+                  map.removeLayer(module.extentLayer);
+                  module.extentLayer = null;
+                }
+
+                if (module.ext_bbox_input) {
+                  module.ext_bbox_input.val('');
+                }
+
+                element.find('.btn-primary').removeClass('disabled');
+              }
+            }]
+          });
+          clearButton.addTo(module.drawMap);
+
           // Pan (drag hand) button
           const panButton = L.easyButton({
             states: [{
@@ -380,6 +408,8 @@ this.ckan.module('spatial-query', function ($, _) {
             }]
           });
           panButton.addTo(module.drawMap);
+
+          
 
           module._setPreviousBBBox(map, zoom=false);
           map.fitBounds(module.mainMap.getBounds());

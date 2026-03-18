@@ -71,7 +71,7 @@ this.ckan.module('spatial-query', function ($, _) {
             <span id="no-results-text" class="d-none text-danger">No results found.</span>
             <div>
               <div class="d-flex gap-2 align-items-middle mb-2">
-                <div style="width: 45%;">
+                <div style="width: 45%; display:none;">
                   <label for="public-search-categories">Select a feature category</label>
                   <select placeholder="Click here to select a category" id="public-search-categories" class="js-choice-category"></select>
                 </div>

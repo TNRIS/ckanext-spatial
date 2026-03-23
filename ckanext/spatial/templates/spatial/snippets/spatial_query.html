@@ -16,7 +16,9 @@ e.g.
     <h2 class="module-heading">
         <i class="fa fa-globe"></i>
         {{ _('Filter by location') }}
-        <a href="{{ h.remove_url_param(['ext_bbox']) }}" class="action">{{ _('Clear') }}</a>
+        {% if request.args.get('ext_bbox') %}
+            <a href="{{ h.remove_url_param(['ext_bbox']) }}" class="action">{{ _('Clear') }}</a>
+        {% endif %}
     </h2>
     {% set map_config = h.get_common_map_config() %}
     <div class="dataset-map" data-module="spatial-query" data-default_extent="{{ default_extent }}" data-module-map_config="{{ h.dump_json(map_config) }}">

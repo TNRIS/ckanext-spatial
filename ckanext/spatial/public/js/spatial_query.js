@@ -191,7 +191,7 @@ this.ckan.module('spatial-query', function ($, _) {
         this.modal.on('shown.bs.modal', function () {
           if (module.drawMap) {
             module._setPreviousBBBox(map, zoom=false);
-            // map.fitBounds(module.mainMap.getBounds());
+            map.fitBounds(module.mainMap.getBounds());
 
             $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
             return
@@ -412,7 +412,7 @@ this.ckan.module('spatial-query', function ($, _) {
           
 
           module._setPreviousBBBox(map, zoom=false);
-          // map.fitBounds(module.mainMap.getBounds());
+          map.fitBounds(module.mainMap.getBounds());
 
           if (map.getZoom() == 0) {
             map.zoomIn();

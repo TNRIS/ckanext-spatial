@@ -1,3 +1,10 @@
+.leaflet-container {
+
+  font-family: "Quicksand", "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
+
+}
+
 .module-narrow #dataset-map-container {
   height: 200px;
   font-size: 14px;

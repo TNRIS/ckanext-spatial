@@ -372,8 +372,8 @@ this.ckan.module('spatial-query', function ($, _) {
           const clearButton = L.easyButton({
             states: [{
               stateName: 'clear-drawing',
-              icon: 'fa-eraser',
-              title: 'Clear a Rectangle',
+              icon: 'fa-ban',
+              title: 'Clear Bounding Box',
               onClick: function(btn, map) {
                 for (var toolbarId in map.drawControl._toolbars) {
                   map.drawControl._toolbars[toolbarId].disable();
@@ -600,7 +600,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
           var button = L.DomUtil.create('a', 'leaflet-control-custom-button', container);
           button.innerHTML = '<i class="fa fa-pencil"></i>';
-          button.title = module._('Draw an extent');
+          button.title = module._('Draw a Bounding Box');
 
           L.DomEvent.on(button, 'click', function(e) {
             module.sandbox.body.append(module._createModal());

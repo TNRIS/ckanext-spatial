@@ -106,7 +106,7 @@ L.drawLocal = {
 			buttons: {
 				polyline: 'Draw a polyline',
 				polygon: 'Draw a polygon',
-				rectangle: 'Draw a rectangle',
+				rectangle: 'Draw a Bounding Box',
 				circle: 'Draw a circle',
 				marker: 'Draw a marker',
 				circlemarker: 'Draw a circlemarker'

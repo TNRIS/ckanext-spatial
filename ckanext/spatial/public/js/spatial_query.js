@@ -24,6 +24,7 @@ this.ckan.module('spatial-query', function ($, _) {
     template: {
       buttons: [
         '<div id="dataset-map-edit-buttons">',
+        '<a href="javascript:;" class="btn clear">Clear Bounding Box</a> ',
         '<a href="javascript:;" class="btn cancel">Cancel</a> ',
         '<a href="javascript:;" class="btn apply disabled">Apply</a>',
         '</div>'
@@ -39,6 +40,7 @@ this.ckan.module('spatial-query', function ($, _) {
           '</div>',
           '<div class="modal-body"><div id="draw-map-container"></div></div>',
           '<div class="modal-footer">',
+          '<button class="btn btn-default btn-clear "></button>',
           '<button class="btn btn-default btn-cancel" data-dismiss="modal"></button>',
           '<button class="btn apply btn-primary disabled"></button>',
           '</div>',
@@ -85,8 +87,13 @@ this.ckan.module('spatial-query', function ($, _) {
             </div>
           </div></div>`,
           '<div class="modal-footer">',
+          '<div class="modal-footer-left">',
+          '<button type="button" style="float: left;" class="btn btn-default btn-clear "></button>',
+          '</div>',
+          '<div class="modal-footer-right">',
           '<button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal"></button>',
           '<button type="button" class="btn btn-primary apply disabled"></button>',
+          '</div>',
           '</div>',
           '</div>',
           '</div>',
@@ -178,11 +185,13 @@ this.ckan.module('spatial-query', function ($, _) {
     _createModal: function () {
       if (!this.modal) {
         var element = this.modal = jQuery(this.template.modal["bootstrap" + this._getBootstrapVersion()]);
+        element.on('click', '.btn-clear', this._onClear);
         element.on('click', '.btn-primary', this._onApply);
         element.on('click', '.btn-cancel', this._onCancel);
         element.modal({show: false});
 
         element.find('.modal-title').text(this._('Filter by Location'));
+        element.find('.btn-clear').text(this._('Clear Bounding Box'));
         element.find('.apply').text(this._('Apply'));
         element.find('.btn-cancel').text(this._('Cancel'));
 
@@ -511,6 +520,14 @@ this.ckan.module('spatial-query', function ($, _) {
 
     _drawExtentFromGeoJSON: function(geom) {
         return new L.GeoJSON(geom, {style: this.options.style});
+    },
+
+    _onClear: function() {
+
+      if (this.extentLayer) {
+        this.drawMap.removeLayer(this.extentLayer);
+      }
+
     },
 
     _onApply: function() {

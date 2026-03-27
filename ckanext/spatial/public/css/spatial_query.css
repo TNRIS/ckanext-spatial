@@ -5,6 +5,12 @@
 
 }
 
+.modal-spatial-query .modal-footer {
+
+  justify-content: space-between;
+
+}
+
 .module-narrow #dataset-map-container {
   height: 200px;
   font-size: 14px;

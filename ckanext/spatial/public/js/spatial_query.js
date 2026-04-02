@@ -12,11 +12,11 @@ this.ckan.module('spatial-query', function ($, _) {
       i18n: {
       },
       style: {
-        color: '#F06F64',
+        color: '#0B7D8E',
         weight: 2,
         opacity: 1,
-        fillColor: '#F06F64',
-        fillOpacity: 0.1,
+        fillColor: '#0B7D8E',
+        fillOpacity: 0.2,
         clickable: false
       },
       default_extent: [[90, 180], [-90, -180]]
@@ -30,6 +30,7 @@ this.ckan.module('spatial-query', function ($, _) {
         '</div>'
       ].join(''),
       modal: {
+        /*
         bootstrap3: [
           '<div class="modal">',
           '<div class="modal-dialog modal-lg">',
@@ -48,6 +49,7 @@ this.ckan.module('spatial-query', function ($, _) {
           '</div>',
           '</div>'
         ].join('\n'),
+        */
         bootstrap5: [
           '<div class="modal" tabindex="-1">',
           '<div class="modal-dialog modal-lg modal-spatial-query">',
@@ -58,19 +60,27 @@ this.ckan.module('spatial-query', function ($, _) {
           '</div>',
           `<div class="modal-body">
             <p style="margin-bottom: 0;">Please use the pencil tool on the map to draw a rectangle to filter by location.</p>
-            <p>You may also use the address search and select tools to help find a location.</p>
-            <div class="search-address-wrapper" style="position: relative; display: inline-block;">
-            <input class="rounded-2" id="search-address-box" type="text" placeholder="Search for an address." style="height: fit-content; padding-right: 40px;" />
-            <button id="search-address-clear-button" type="button" class="d-none" style="position: absolute; top: 0; right: 0; border: none; background-color: transparent; cursor: pointer;">X</button>
+            <p>Use the search bar or zoom buttons to navigate to a desired location.</p>
+            <div class="input-group search-input-group">
+              <input aria-label="Search for an address" id="search-address-box" type="text" class="form-control input-lg" value="" autocomplete="off" placeholder="e.g., address, lat/long, or county name">
+              <button id="search-address-button" class="btn btn-default btn-lg" type="button" value="search" aria-label="Submit Search" title="Submit Search">
+                <i class="fa fa-search"></i>
+              </button>
+              <button 
+                id="search-address-clear-button" type="button" title="Clear Search"
+                class="d-none btn btn-default btn-lg" value="reset-search" aria-label="Clear Search">
+                <i class="fa fa-remove"></i>
+              </button>
             </div>
-            <button class="btn btn-primary" type="button" id="search-address-button" disabled style="height: fit-content;">Search address</button>
+
             <div id="search-dropdown" class="dropdown d-inline-flex d-none" style="width: fit-content">
               <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false">
-                View results
+                Multiple Results Found
               </button>
               <ul id="search-dropdown-list" class="dropdown-menu" style="z-index: 1001;" aria-labelledby="dropdownMenu2"></ul>
             </div>
-            <span id="no-results-text" class="d-none text-danger">No results found.</span>
+            <div id="search-dropdown-selection"></div>
+            <div id="no-results-text" class="d-none text-danger">No results found.</div>
             <div>
               <div class="d-flex gap-2 align-items-middle mb-2">
                 <div style="width: 45%; display:none;">
@@ -88,7 +98,7 @@ this.ckan.module('spatial-query', function ($, _) {
           </div></div>`,
           '<div class="modal-footer">',
           '<div class="modal-footer-left">',
-          '<button type="button" style="float: left;" class="btn btn-default btn-clear "></button>',
+          '<button id="clear-bbox" type="button" style="float: left;" class="btn btn-default btn-clear d-none"></button>',
           '</div>',
           '<div class="modal-footer-right">',
           '<button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal"></button>',
@@ -121,7 +131,7 @@ this.ckan.module('spatial-query', function ($, _) {
     },
 
     async runAddressSearch(search_query) {
-      this.searchAddressButton.innerText = "Searching...";
+      // this.searchAddressButton.innerText = "Searching...";
       const nominatimEndpoint = `https://nominatim.tnris.org/search?addressdetails=1&q=${search_query}&format=jsonv2&limit=10`;
       fetch(nominatimEndpoint, {
         headers: {
@@ -151,6 +161,14 @@ this.ckan.module('spatial-query', function ($, _) {
             // entryButton.innerText = `${entry["display_name"]} | (${entry["lat"]}, ${entry["lon"]})`;
             entryButton.innerText = entry["display_name"];
             entryButton.onclick = () => {
+
+              const searchDropdownSelection = document.getElementById("search-dropdown-selection");
+              searchDropdownSelection.style.display = "inline";
+              searchDropdownSelection.innerHTML = '<strong>Selected:</strong> ' + entry["display_name"];
+
+              // element.find("#no-results-text").addClass("d-none");
+              $("#search-dropdown-selection").removeClass("d-none");
+
               const boundingbox = entry["boundingbox"];
               this.drawMap.fitBounds([[boundingbox[0], boundingbox[2]], [boundingbox[1], boundingbox[3]]]);
             }
@@ -158,6 +176,13 @@ this.ckan.module('spatial-query', function ($, _) {
             searchDropdownList.appendChild(entryLi);
           };
           this.searchDropdown.classList.remove("d-none");
+
+          const searchDropdownSelection = document.getElementById("search-dropdown-selection");
+          searchDropdownSelection.style.display = "inline";
+          searchDropdownSelection.innerHTML = '<strong>Selected:</strong> ' + this.searchResults[0]["display_name"];
+
+
+
         }
         else if (data && data.length > 0) {
           const boundingBox = data[0]["boundingbox"];
@@ -167,7 +192,7 @@ this.ckan.module('spatial-query', function ($, _) {
         }
       })).finally(() => {
         this.searchAddressButton.removeAttribute("disabled")
-        this.searchAddressButton.innerText = "Search address";
+        // this.searchAddressButton.innerText = "<i class='fa fa-search'></i>";
       });
     },
     _getData: async function (value) {
@@ -186,6 +211,7 @@ this.ckan.module('spatial-query', function ($, _) {
       if (!this.modal) {
         var element = this.modal = jQuery(this.template.modal["bootstrap" + this._getBootstrapVersion()]);
         element.on('click', '.btn-clear', this._onClear);
+        // element.on('click', '#search-address-clear-button', this._clearSearch);
         element.on('click', '.btn-primary', this._onApply);
         element.on('click', '.btn-cancel', this._onCancel);
         element.modal({show: false});
@@ -199,14 +225,58 @@ this.ckan.module('spatial-query', function ($, _) {
 
         this.modal.on('shown.bs.modal', function () {
           if (module.drawMap) {
+            console.log( 'hello' );
             module._setPreviousBBBox(map, zoom=false);
             map.fitBounds(module.mainMap.getBounds());
-
             $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
             return
           }
           var container = element.find('#draw-map-container')[0];
           module.drawMap = map = module._createMap(container);
+
+          module._setPreviousBBBox(map, zoom=false);
+
+          map.fitBounds(module.mainMap.getBounds());
+          // map.zoomIn();          
+          console.log(module.mainMap.getBounds());
+
+          console.log( map.getZoom() )
+
+          if (map.getZoom() == 0) {
+            map.zoomIn();
+            console.log( 'zoomIn');
+          }
+
+          console.log( map.getZoom() );
+
+          /*
+          map.fitBounds([[
+            26.391869671769022,
+            -106.52020785362564],
+            [36.63316209558658,
+            -93.95817734373162
+          ]])
+          */
+
+
+
+
+
+
+          const clearSearch = document.querySelector("#search-address-clear-button");
+          clearSearch.addEventListener("click", (e) => {
+
+            console.log( 'clearSearch' );
+            element.find("#no-results-text").addClass("d-none");
+            element.find("#search-dropdown").addClass("d-none");
+            element.find("#search-dropdown-selection").addClass("d-none");
+            $("#search-address-box").focus();
+            
+
+
+          })
+
+
           // Set up named place category selector
           const categoriesElement = document.querySelector(".js-choice-category");
           const categories = new Choices(categoriesElement, {
@@ -357,7 +427,13 @@ this.ckan.module('spatial-query', function ($, _) {
               icon:      'fa-home',
               title:     'Zoom out to Texas',
               onClick: function(btn, map) {
-                map.fitBounds([[25.840437651866516, -106.64719063660635], [36.50050935248352, -93.5175532104321]])
+                // map.fitBounds([[25.840437651866516, -106.64719063660635], [36.50050935248352, -93.5175532104321]])
+                map.fitBounds([[
+                  26.391869671769022,
+                  -106.52020785362564],
+                  [36.63316209558658,
+                  -93.95817734373162
+                ]])
               }
             }]
           });
@@ -378,6 +454,7 @@ this.ckan.module('spatial-query', function ($, _) {
           map.addControl(map.drawControl);
 
           // Clear drawing button
+          /*
           const clearButton = L.easyButton({
             states: [{
               stateName: 'clear-drawing',
@@ -402,6 +479,7 @@ this.ckan.module('spatial-query', function ($, _) {
             }]
           });
           clearButton.addTo(module.drawMap);
+          */
 
           // Pan (drag hand) button
           const panButton = L.easyButton({
@@ -418,15 +496,6 @@ this.ckan.module('spatial-query', function ($, _) {
           });
           panButton.addTo(module.drawMap);
 
-          
-
-          module._setPreviousBBBox(map, zoom=false);
-          map.fitBounds(module.mainMap.getBounds());
-
-          if (map.getZoom() == 0) {
-            map.zoomIn();
-          }
-
           map.on('draw:created', function (e) {
             if (module.extentLayer) {
               map.removeLayer(module.extentLayer);
@@ -435,6 +504,7 @@ this.ckan.module('spatial-query', function ($, _) {
             module.ext_bbox_input.val(extentLayer.getBounds().toBBoxString());
             map.addLayer(extentLayer);
             element.find('.btn-primary').removeClass('disabled').addClass('btn-primary');
+            element.find('#clear-bbox').removeClass('d-none');
           });
 
           $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
@@ -449,14 +519,20 @@ this.ckan.module('spatial-query', function ($, _) {
             module.searchAddressBox.value = "";
             module.searchAddressButton.setAttribute("disabled", true)
             module.searchAddressClearButton.classList.add("d-none");
+            module.searchAddressButton.classList.remove("not-rounded");
           }
           module.searchDropdown = document.getElementById("search-dropdown");
           module.noResultsText = document.getElementById("no-results-text");
           // Disable default enter key behavior when pressing enter in the searchbox
           module.searchAddressBox.onkeydown = (e) => {
+            /*
             module.noResultsText.classList.add("d-none");
-            module.searchAddressClearButton.classList.remove("d-none");
             module.searchDropdown.classList.add("d-none");
+            */
+            if( module.searchAddressBox.value.length > 0  ) {
+              module.searchAddressClearButton.classList.remove("d-none");
+              module.searchAddressButton.classList.add("not-rounded");
+            }
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
               e?.preventDefault();
             }
@@ -491,7 +567,7 @@ this.ckan.module('spatial-query', function ($, _) {
           }
           document.getElementById('search-address-box').value = "";
           document.getElementById('search-address-button').setAttribute("disabled", true);
-          document.getElementById('search-address-clear-button').classList.add("d-none");
+          document.getElementById('search-address-button').classList.remove("not-rounded");
           document.getElementById('search-address-clear-button').classList.add("d-none");
           document.getElementById('search-dropdown').classList.add("d-none");
           module._onCancel()
@@ -524,9 +600,15 @@ this.ckan.module('spatial-query', function ($, _) {
 
     _onClear: function() {
 
+      $("#clear-bbox").addClass('d-none');
       if (this.extentLayer) {
         this.drawMap.removeLayer(this.extentLayer);
+        $('.modal-footer').find('.btn-primary').removeClass('disabled');
+        $('#ext_bbox').val('');
+      } else {
+        $('.modal-footer').find('.btn-primary').addClass('disabled');
       }
+
 
     },
 
@@ -582,14 +664,19 @@ this.ckan.module('spatial-query', function ($, _) {
       let module = this;
       previous_bbox = module._getParameterByName('ext_bbox');
       if (previous_bbox) {
+        console.log( previous_bbox )
         module.ext_bbox_input.val(previous_bbox);
         module.extentLayer = module._drawExtentFromCoords(previous_bbox.split(','))
         map.addLayer(module.extentLayer);
         if (zoom) {
-          map.fitBounds(module.extentLayer.getBounds(), {"animate": false, "padding": [20, 20]});
+          map.fitBounds(module.extentLayer.getBounds(), {"animate": false, "padding": [0, 0]});
         }
+        $("#clear-bbox").removeClass('d-none');
       } else {
-        map.fitBounds(module.options.default_extent, {"animate": false});
+        console.log( 'no bbox' );
+        console.log( module.options.default_extent );
+        map.fitBounds(module.options.default_extent, {"animate": false, "padding": [0, 0]});
+
       }
     },
 

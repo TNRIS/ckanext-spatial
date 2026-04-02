@@ -69,3 +69,25 @@
 .modal-spatial-query {
   max-width: 900px;
 }
+
+#search-dropdown,
+#no-results-text
+{
+
+  margin-top: 1rem;
+
+}
+
+#search-address-button
+{
+
+  border-radius: 0 0.8rem 0.8rem 0;
+
+}
+
+#search-address-button.not-rounded
+{
+
+  border-radius: 0;
+
+}

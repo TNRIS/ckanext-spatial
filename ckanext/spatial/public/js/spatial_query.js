@@ -133,6 +133,11 @@ this.ckan.module('spatial-query', function ($, _) {
     async runAddressSearch(search_query) {
       // this.searchAddressButton.innerText = "Searching...";
       const nominatimEndpoint = `https://nominatim.tnris.org/search?addressdetails=1&q=${search_query}&format=jsonv2&limit=10`;
+      
+      // hide previous result output
+      $("#no-results-text").addClass("d-none");
+      $("#search-dropdown-selection").addClass("d-none");
+
       fetch(nominatimEndpoint, {
         headers: {
           "User-Agent": "Texas Water Data Hub"
@@ -166,7 +171,7 @@ this.ckan.module('spatial-query', function ($, _) {
               searchDropdownSelection.style.display = "inline";
               searchDropdownSelection.innerHTML = '<strong>Selected:</strong> ' + entry["display_name"];
 
-              // element.find("#no-results-text").addClass("d-none");
+              $("#no-results-text").addClass("d-none");
               $("#search-dropdown-selection").removeClass("d-none");
 
               const boundingbox = entry["boundingbox"];
@@ -257,11 +262,6 @@ this.ckan.module('spatial-query', function ($, _) {
             -93.95817734373162
           ]])
           */
-
-
-
-
-
 
           const clearSearch = document.querySelector("#search-address-clear-button");
           clearSearch.addEventListener("click", (e) => {
@@ -525,13 +525,16 @@ this.ckan.module('spatial-query', function ($, _) {
           module.noResultsText = document.getElementById("no-results-text");
           // Disable default enter key behavior when pressing enter in the searchbox
           module.searchAddressBox.onkeydown = (e) => {
-            /*
+
             module.noResultsText.classList.add("d-none");
             module.searchDropdown.classList.add("d-none");
-            */
+
             if( module.searchAddressBox.value.length > 0  ) {
               module.searchAddressClearButton.classList.remove("d-none");
               module.searchAddressButton.classList.add("not-rounded");
+            } else {
+
+              module.searchAddressButton.classList.remove("not-rounded");
             }
             if (e.key === "Enter" && (!module.searchAddressButton.getAttribute("disabled") || module.searchAddressButton.getAttribute("disabled") === "false")) {
               e?.preventDefault();

@@ -12,11 +12,11 @@ this.ckan.module('spatial-query', function ($, _) {
       i18n: {
       },
       style: {
-        color: '#0B7D8E',
+        color: '#3388ff',
         weight: 2,
         opacity: 1,
-        fillColor: '#0B7D8E',
-        fillOpacity: 0.2,
+        fillColor: '#3388ff',
+        fillOpacity: 0.25,
         clickable: false
       },
       default_extent: [[90, 180], [-90, -180]]

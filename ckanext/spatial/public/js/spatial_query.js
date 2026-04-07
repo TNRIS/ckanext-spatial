@@ -1,6 +1,10 @@
 /* Module for handling the spatial querying
  */
 this.ckan.module('spatial-query', function ($, _) {
+  const TEXAS_BOUNDS = [
+    [26.391869671769022,-106.52020785362564],
+    [36.63316209558658,-93.95817734373162 ]
+  ];
 
   return {
     options: {
@@ -230,9 +234,9 @@ this.ckan.module('spatial-query', function ($, _) {
 
         this.modal.on('shown.bs.modal', function () {
           if (module.drawMap) {
-            console.log( 'hello' );
+            module.drawMap.invalidateSize();
             module._setPreviousBBBox(map, zoom=false);
-            map.fitBounds(module.mainMap.getBounds());
+            map.fitBounds(TEXAS_BOUNDS, { animate: false,padding: [20, 20]});
             $('a.leaflet-draw-draw-rectangle>span', element).trigger('click');
             return
           }
@@ -241,7 +245,7 @@ this.ckan.module('spatial-query', function ($, _) {
 
           module._setPreviousBBBox(map, zoom=false);
 
-          map.fitBounds(module.mainMap.getBounds());
+          map.fitBounds(TEXAS_BOUNDS, { animate: false,padding: [20, 20]});
           // map.zoomIn();          
           console.log(module.mainMap.getBounds());
 

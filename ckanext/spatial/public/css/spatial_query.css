@@ -1,3 +1,16 @@
+.leaflet-container {
+
+  font-family: "Quicksand", "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
+
+}
+
+.modal-spatial-query .modal-footer {
+
+  justify-content: space-between;
+
+}
+
 .module-narrow #dataset-map-container {
   height: 200px;
   font-size: 14px;
@@ -55,4 +68,26 @@
 
 .modal-spatial-query {
   max-width: 900px;
+}
+
+#search-dropdown,
+#no-results-text
+{
+
+  margin-top: 1rem;
+
+}
+
+#search-address-button
+{
+
+  border-radius: 0 0.8rem 0.8rem 0;
+
+}
+
+#search-address-button.not-rounded
+{
+
+  border-radius: 0;
+
 }

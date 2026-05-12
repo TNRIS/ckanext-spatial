@@ -1,5 +1,5 @@
 dataset_map_js:
-  filter: rjsmin
+  filters: rjsmin
   output: ckanext-spatial/%(version)s_dataset_map.js
   extra:
     preload:
@@ -19,7 +19,7 @@ dataset_map_css:
     - css/dataset_map.css
 
 spatial_query_js:
-  filter: rjsmin
+  filters: rjsmin
   output: ckanext-spatial/%(version)s_spatial_query.js
   extra:
     preload:

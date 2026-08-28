@@ -709,10 +709,14 @@ this.ckan.module('spatial-query', function ($, _) {
         onAdd: function(map) {
           var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
-          var button = L.DomUtil.create('a', 'leaflet-control-custom-button', container);
+          var button = L.DomUtil.create('button', 'leaflet-control-custom-button', container);
           button.innerHTML = '<i class="fa fa-pencil"></i>';
           button.title = module._('Draw a Bounding Box');
 
+          button.setAttribute('role', 'button');
+          button.setAttribute('aria-label', 'Expand Map');
+
+          container.tabindex = 0;
           L.DomEvent.on(button, 'click', function(e) {
             module.sandbox.body.append(module._createModal());
             module.modal.modal('show');

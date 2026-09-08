@@ -41,8 +41,8 @@
       delete L.Icon.Default.prototype._getIconUrl;
           
       L.Icon.Default.mergeOptions({
-        iconUrl: '/base/images/twdh-marker-teal.svg',
-        iconRetinaUrl: '/base/images/twdh-marker-teal.svg',
+        iconUrl: '/base/images/twdh-marker-white.svg',
+        iconRetinaUrl: '/base/images/twdh-marker-white.svg',
         shadowUrl: '/img/leaflet/marker-shadow.png',
         iconSize: [25, 41],         // size of the icon [width, height]
         iconAnchor: [12, 41],       // point of the icon which will correspond to marker's location

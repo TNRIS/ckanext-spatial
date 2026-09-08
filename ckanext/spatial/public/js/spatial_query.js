@@ -59,7 +59,7 @@ this.ckan.module('spatial-query', function ($, _) {
           '<div class="modal-dialog modal-lg modal-spatial-query">',
           '<div class="modal-content">',
           '<div class="modal-header flex-row">',
-          '<h4 class="modal-title"></h4>',
+          '<h2 class="modal-title"></h2>',
           '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>',
           '</div>',
           `<div class="modal-body">
@@ -709,10 +709,14 @@ this.ckan.module('spatial-query', function ($, _) {
         onAdd: function(map) {
           var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
-          var button = L.DomUtil.create('a', 'leaflet-control-custom-button', container);
+          var button = L.DomUtil.create('button', 'leaflet-control-custom-button', container);
           button.innerHTML = '<i class="fa fa-pencil"></i>';
           button.title = module._('Draw a Bounding Box');
 
+          button.setAttribute('role', 'button');
+          button.setAttribute('aria-label', 'Expand Map');
+
+          container.tabindex = 0;
           L.DomEvent.on(button, 'click', function(e) {
             module.sandbox.body.append(module._createModal());
             module.modal.modal('show');

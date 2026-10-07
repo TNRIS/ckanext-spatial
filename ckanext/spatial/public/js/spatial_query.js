@@ -657,8 +657,13 @@ this.ckan.module('spatial-query', function ($, _) {
           layers: [Object.values(baselayers).at(0)],
           attributionControl: false,
           drawControlTooltips: false,
+          scrollWheelZoom: false
         },
       );
+      // Turn on scroolWheelZoom only when map is in focus
+      map.on('focus', function() { map.scrollWheelZoom.enable(); }); 
+      map.on('blur', function() { map.scrollWheelZoom.disable(); }); 
+
       this.overlays = {};
       L.control.layers(baselayers, this.overlays).addTo(map);
 
